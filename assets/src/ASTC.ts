@@ -501,7 +501,7 @@ export namespace ASTC {
   export function CreateSpriteFrameByInfo(
     info: IMemoryImageSource | ImageAsset
   ) {
-    console.log("CreateSpriteFrameByInfo", info);
+    console.log("创建精灵帧", info);
     if (info instanceof ImageAsset) {
       return createWithImageAsset(info);
     } else if (IsFormatSuported(info.format)) {

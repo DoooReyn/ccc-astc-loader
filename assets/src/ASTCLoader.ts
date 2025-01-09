@@ -40,7 +40,7 @@ export class ASTCLoader extends Component {
       }, 3000);
       setTimeout(() => {
         this.anyLoadAstc();
-      }, 60000);
+      }, 6000);
     } else {
       this.title.string = "ASTC is not supported on this platform!";
       this.title.color = Color.RED;
