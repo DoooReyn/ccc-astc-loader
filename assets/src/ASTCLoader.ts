@@ -3,10 +3,12 @@ import {
   assetManager,
   Color,
   Component,
+  ImageAsset,
   Label,
   resources,
   Sprite,
   SpriteFrame,
+  sys,
 } from "cc";
 import { ASTC } from "./ASTC";
 const { ccclass, property } = _decorator;
@@ -22,16 +24,23 @@ export class ASTCLoader extends Component {
   title: Label = null;
 
   start() {
+    console.log("操作系统", sys.os);
+    console.log("是否原生", sys.isNative);
+    console.log("是否浏览器", sys.isBrowser);
+    console.log("是否移动端", sys.isMobile);
+
+    ASTC.Init();
+
     if (ASTC.IsPlatformSupported()) {
       this.title.string = "ASTC is supported on this platform.";
       this.title.color = Color.GREEN;
       this.dynamicLoadAstc();
       setTimeout(() => {
         this.remoteLoadAstc();
-      }, 2000);
+      }, 3000);
       setTimeout(() => {
         this.anyLoadAstc();
-      }, 4000);
+      }, 60000);
     } else {
       this.title.string = "ASTC is not supported on this platform!";
       this.title.color = Color.RED;
@@ -53,10 +62,11 @@ export class ASTCLoader extends Component {
 
   /** 通过 resources.load 加载 */
   private dynamicLoadAstc() {
-    resources.load(EXTENSIONS.ASTC, (err, asset) => {
+    resources.load(EXTENSIONS.ASTC, (err, data: any) => {
       if (err) return console.error(err);
       this.title.string = "通过 resources.load 加载成功！";
-      this.sprite.spriteFrame = ASTC.CreateSpriteFrameFromDynamic(asset);
+      const info = sys.isBrowser ? data._file : data._file["file"];
+      this.sprite.spriteFrame = ASTC.CreateSpriteFrameByInfo(info);
     });
   }
 
@@ -64,16 +74,19 @@ export class ASTCLoader extends Component {
   private anyLoadAstc() {
     assetManager.loadAny({ url: REMOTE_ADDR }, (err, data) => {
       if (err) return console.error(err);
-      this.sprite.spriteFrame = ASTC.CreateSpriteFrameByInfo(data);
+      const info = sys.isBrowser ? data : data.file;
+      this.sprite.spriteFrame = ASTC.CreateSpriteFrameByInfo(info);
       this.title.string = "通过 loadAny 加载成功！";
     });
   }
 
   /** 通过 loadRemote 加载 */
   private remoteLoadAstc() {
-    assetManager.loadRemote(REMOTE_ADDR, (err, data) => {
+    assetManager.loadRemote(REMOTE_ADDR, (err, data: any) => {
       if (err) return console.error(err);
-      this.sprite.spriteFrame = ASTC.CreateSpriteFrameFromRemote(data);
+      const info = data instanceof ImageAsset ? data : data._nativeData;
+      const frame = ASTC.CreateSpriteFrameByInfo(info);
+      this.sprite.spriteFrame = frame;
       this.title.string = "通过 loadRemote 加载成功！";
     });
   }
