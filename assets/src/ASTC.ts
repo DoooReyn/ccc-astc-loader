@@ -21,6 +21,14 @@ export namespace ASTC {
 
   var parseCompressedTextures_ = (<any>ImageAsset).parseCompressedTextures;
 
+  /** 日志开关 */
+  const dumpSwitcher = true;
+
+  /** 输出内容 */
+  function dump(log: string, ...args: any) {
+    if (dumpSwitcher) console.log(log, ...args);
+  }
+
   /**
    * 是否支持指定的纹理格式
    * @param format 纹理格式
@@ -461,19 +469,19 @@ export namespace ASTC {
         url,
         options,
         (err: any, data: ArrayBuffer) => {
-          console.debug("下载ASTC压缩纹理成功", url, js.getClassName(data));
+          data && dump("ASTC下载成功", url, js.getClassName(data));
           oncomplete && oncomplete(err, { file: data, url });
         }
       );
     });
     parser.register(".astc", function (data, options, oncomplete) {
-      if (data.file instanceof ArrayBuffer) {
+      if (data && data.file instanceof ArrayBuffer) {
         const u8 = new Uint8Array(data.file);
         const astc = parseCompressedTextures(u8, 2);
-        console.debug("解析ASTC压缩纹理成功", data.url, js.getClassName(astc));
+        dump("ASTC解析成功", data.url, js.getClassName(astc));
         oncomplete && oncomplete(null, { file: astc, url: data.url });
       } else {
-        console.debug("解析ASTC压缩纹理失败", data.url);
+        dump("ASTC解析失败", data.url);
         oncomplete && oncomplete(null, null);
       }
     });
@@ -485,10 +493,10 @@ export namespace ASTC {
         out = new ImageAsset();
         out._nativeUrl = id;
         out._nativeAsset = data.file;
-        console.debug("创建ASTC压缩纹理成功", data.url, out);
+        dump("ASTC创建压成功", data.url, out);
       } catch (e) {
         err = e as Error;
-        console.debug("解析ASTC压缩纹理失败", data.url);
+        dump("ASTC创建失败", data.url);
       }
       onComplete(err, out);
     });
@@ -501,7 +509,7 @@ export namespace ASTC {
   export function CreateSpriteFrameByInfo(
     info: IMemoryImageSource | ImageAsset
   ) {
-    console.log("创建精灵帧", info);
+    dump("创建精灵帧", info);
     if (info instanceof ImageAsset) {
       return createWithImageAsset(info);
     } else if (IsFormatSuported(info.format)) {
